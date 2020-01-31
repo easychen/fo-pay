@@ -142,7 +142,7 @@ function fo_cron_exec()
 
     foreach( $txs as $tx )
     {
-        $reg = '/^WPFO\-233\-([0-9]+)\-([0-9]+)$/is';
+        $reg = '/^WPFO\-'. $option['idstr'] .'\-([0-9]+)\-([0-9]+)$/is';
         if( preg_match( $reg , $tx['memo'] , $out ) )
         {
             list( , $post_id , $uid ) = $out;
@@ -274,14 +274,14 @@ function get_pay_notice( $post_id , $price = 1 )
     {
         $url = "https://wallet.fo/Pay?params=" . urlencode( $account ) . ",FOUSDT,eosio,". $price ."," . urlencode( 'WPFO-'.$idstr.'-'.$post_id . "-" . $user->ID );
         
-        $notice = "此内容需要支付后才能阅读。请<a href='https://wallet.fo' target='_blank'>下载 FO 钱包</a>，扫描二维码支付。完成后，稍等三到五分钟刷新本页面。 ";
+        $notice = "<p>以下部分的内容需要支付后才能阅读。请<a href='https://wallet.fo' target='_blank'>下载 FO 钱包</a>，扫描二维码支付。完成后，稍等三到五分钟刷新本页面。 </p>";
 
-        $notice .= '<img style="margin:20px;" src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chld=H|1&chl='.urlencode($url).'" />';
+        $notice .= '<p><img style="margin:20px;" src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chld=H|1&chl='.urlencode($url).'" /></p>';
 
     }
     else
     {
-        $notice = "此内容需要支付后才能阅读，请先登入后进行支付";
+        $notice = "<p>以下部分内容需要支付后才能阅读，请先<a href='/wp-login.php'>登入</a>后进行支付</p>";
     }
 
     return $notice;
