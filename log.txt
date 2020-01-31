@@ -1,0 +1,125 @@
+prefix=WPFO-233
+取到了meta里的 price 1
+支付价格为 1
+取到了meta里的 price 1
+支付价格为 1
+updated Array
+(
+    [0] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+to change Array
+(
+    [16] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+prefix=WPFO-233
+取到了meta里的 price 1
+支付价格为 1
+取到了meta里的 price 1
+支付价格为 1
+updated Array
+(
+    [0] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+to change Array
+(
+    [16] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+prefix=WPFO-233
+取到了meta里的 price 1
+支付价格为 1
+取到了meta里的 price 1
+支付价格为 1
+updated Array
+(
+    [0] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+to change Array
+(
+    [16] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+prefix=WPFO-233
+取到了meta里的 price 1
+支付价格为 1
+取到了meta里的 price 1
+支付价格为 1
+updated Array
+(
+    [0] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+to change Array
+(
+    [16] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+prefix=WPFO-233
+取到了meta里的 price 1
+支付价格为 1
+取到了meta里的 price 1
+支付价格为 1
+updated Array
+(
+    [0] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
+to change Array
+(
+    [16] => Array
+        (
+            [0] => 1
+            [1] => 2
+        )
+
+)
+
