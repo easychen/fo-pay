@@ -109,9 +109,9 @@ add_filter('the_content', function( $content )
 
 add_filter( 'cron_schedules', function ( $schedules ) {
     
-    $schedules['five_seconds'] = array(
-        'interval' => 5,
-        'display'  => esc_html__( 'Every Five Seconds' ),
+    $schedules['thirty_seconds'] = array(
+        'interval' => 30,
+        'display'  => esc_html__( 'Every Thirty Seconds' ),
     );
  
     return $schedules;
@@ -119,7 +119,7 @@ add_filter( 'cron_schedules', function ( $schedules ) {
 
 
 if ( ! wp_next_scheduled( 'fo_cron_hook' ) ) {
-    wp_schedule_event( time(), 'five_seconds', 'fo_cron_hook' );
+    wp_schedule_event( time(), 'thirty_seconds', 'fo_cron_hook' );
 }
 
 add_action( 'fo_cron_hook', 'fo_cron_exec' );
@@ -215,46 +215,13 @@ function fo_cron_exec()
 
     logit( "to change " . print_r( $to_change , 1 ) );
 
-    /*
-    $paid_uids = get_post_meta( $post_id , '_paid_uids' );
-
-                    $old_paid_uids = $paid_uids;
-
-                    if( count( $paid_uids ) < 1 ) $paid_uids = [ $uid ];
-                    else
-                    {
-                        if (!in_array($uid, $paid_uids)) {
-                            $paid_uids = array_push($paid_uids, $uid);
-
-                            logit("new paid_uids" . print_r($paid_uids, 1));
-                        }
-                        else
-                        {
-                            logit( "already" );
-                        }
-
-                    }
-
-                    logit( "new paid_uids" . print_r( $paid_uids , 1 ) );
-
-                    update_post_meta( $post_id , '_paid_uids' , $paid_uids , $old_paid_uids  );
-
-                    logit( "updated " . print_r( get_post_meta( $post_id , '_paid_uids' ) , 1 ) );
-
-                    logit("updated");
-                    
-    */
-    
-    
     
     return true;
-    // 
-    // sc_send( "cron执行了" );
 }
 
 function logit( $content )
 {
-    file_put_contents( __DIR__ . "/log.txt" , $content . "\r\n" , FILE_APPEND );
+    // file_put_contents( __DIR__ . "/log.txt" , $content . "\r\n" , FILE_APPEND );
 }
 
 
