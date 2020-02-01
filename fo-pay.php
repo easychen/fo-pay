@@ -3,20 +3,36 @@
 Plugin Name: 	FO Pay
 Plugin URI: 	http://go.ftqq.com/fopay
 Description: 	基于 FO 的付费阅读
-Version: 		1.2
+Version: 		0.2
 Author: 		Easy
 Author URI: 	https://weibo.com/easy
-License: 		GPL2
-License URI:  	https://www.gnu.org/licenses/gpl-2.0.html
+License: 		GPL3
+License URI:  	https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 // 首先我们在后台添加设置菜单
+
+// add_action( 'admin_menu' ,  'fo_pay_test' );
+// function fo_pay_test()
+// {
+//     add_options_page( '佛系支付插件 for FIBOS', '调试页面', 'manage_options' , '_fo_pay_test' , function()
+//     {
+//         print_r( ft_get_meta_array( 23 , '_paid_uids' ) );
+//         // echo "<hr/>";
+//         // print_r( ft_get_meta_array( 23 , '_paid_uids' ) );
+//         // print_r( ft_get_meta_array( 23 , '_edit_last' ) );
+//         // Array ( [0] => Array ( [0] => 2 [1] => 1 ) )
+//     }  );
+// }
+
+
 add_action( 'admin_menu' ,  'fo_pay_menu' );
 
 function fo_pay_menu()
 {
    add_options_page( '佛系支付插件 for FIBOS', 'Fo支付设置', 'manage_options' , '_fo_pay_settings' , 'fo_pay_settings_page' );
 }
+
 
 add_action('admin_init', function()
 {
@@ -60,12 +76,14 @@ add_action('admin_init', function()
 // 显示时，根据权限过滤内容
 add_filter('the_content', function( $content )
 {
-    $meta = get_post_meta(get_the_ID());
+    $post_id = get_the_ID();
     $user = wp_get_current_user();
 
-    if( intval(end($meta['fo-usdt-price'])) > 0 )
+    $price_cent = intval( ft_get_meta( $post_id , 'fo-usdt-price') ) ;
+    
+    if( $price_cent> 0 )
     {
-        $paid_uids = end(get_post_meta( get_the_ID() , '_paid_uids' ));
+        $paid_uids = ft_get_meta_array( $post_id , '_paid_uids');
 
         if( $user && $paid_uids )
         {
@@ -80,7 +98,7 @@ add_filter('the_content', function( $content )
         
         
         // 开始进行付费控制
-        $price = intval(end($meta['fo-usdt-price']))/100;
+        $price = $price_cent/100;
         if( preg_match( "/\[pay](.+?)\[\/pay]/is" , $content  ) )
         {
             $content = preg_replace( "/\[pay](.+?)\[\/pay]/is" , get_pay_notice( get_the_ID() , $price ) , $content );
@@ -145,7 +163,7 @@ function fo_cron_exec()
         if( preg_match( $reg , $tx['memo'] , $out ) )
         {
             list( , $post_id , $uid ) = $out;
-            $post_meta = get_post_meta( $post_id );
+            //$post_meta = get_post_meta( $post_id );
             /**
               Array
                 (
@@ -167,14 +185,15 @@ function fo_cron_exec()
                 )
             */
            
+            $price_cent = ft_get_meta( $post_id , 'fo-usdt-price' );
 
-            if( isset( $post_meta['fo-usdt-price'] ) && intval( intval(end($post_meta['fo-usdt-price'])) ) >= 0 )
+            if( $price_cent && $price_cent>= 0 )
             {
-                logit( "取到了meta里的 price ". intval(end($post_meta['fo-usdt-price'])));
+                logit( "取到了meta里的 price ".  $price_cent );
 
                 $paid_price = explode(" " , $tx['quantity']['quantity'])[0]*100;
 
-                if( $paid_price >= intval(end($post_meta['fo-usdt-price'])) )
+                if( $paid_price >= $price_cent )
                 {
                     logit( "支付价格为 ".$paid_price);
 
@@ -193,26 +212,36 @@ function fo_cron_exec()
         }
     }
 
+    logit( "to change " . print_r( $to_change , 1 ) );
+
     if( count( $to_change ) > 0 )
     {
         foreach( $to_change as $the_post_id => $the_uids )
         {
-            $paid_uids = get_post_meta( $the_post_id , '_paid_uids' );
+            logit("开始更新 $the_post_id ");
+
+            
+            $paid_uids = ft_get_meta_array( $the_post_id , '_paid_uids' );
+
+            logit("取到旧数据" . print_r( $paid_uids  , 1 ));
 
             $old_paid_uids = $paid_uids;
 
             $paid_uids = array_merge( $paid_uids , $the_uids );
             $paid_uids = array_unique( $paid_uids );
 
+            logit("构建新数据" . print_r( $paid_uids  , 1 ));
+
+
 
             update_post_meta( $the_post_id , '_paid_uids' , $paid_uids , $old_paid_uids  );
 
-            logit( "updated " . print_r( get_post_meta( $the_post_id , '_paid_uids' ) , 1 ) );
+            logit( "updated " . print_r( ft_get_meta_array( $the_post_id , '_paid_uids' ) , 1 ) );
 
         }
     }
 
-    logit( "to change " . print_r( $to_change , 1 ) );
+    
 
     
     return true;
@@ -273,7 +302,7 @@ function get_pay_notice( $post_id , $price = 1 )
     {
         $url = "https://wallet.fo/Pay?params=" . urlencode( $account ) . ",FOUSDT,eosio,". $price ."," . urlencode( 'WPFO-'.$idstr.'-'.$post_id . "-" . $user->ID );
         
-        $notice = "<p>以下部分的内容需要支付后才能阅读。请<a href='https://wallet.fo' target='_blank'>下载 FO 钱包</a>，扫描二维码支付。完成后，稍等三到五分钟刷新本页面。 </p>";
+        $notice = "<p>以下部分的内容需要支付后才能阅读。请<a href='https://wallet.fo' target='_blank'>下载 FO 钱包</a>，扫描二维码支付。完成后，请稍等30秒左右刷新本页面。 </p>";
 
         // 国外版 调用 google api
         // $notice .= '<p><a href="fowallet://' . urlencode($url) . '"><img style="margin:20px;" src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chld=H|1&chl='.urlencode($url).'" /></a></p>';
@@ -346,7 +375,7 @@ function fo_get_user_tx( $account , $memo_prefix , $token = 'FOUSDT@eosio' )
         if( $item['token_from']['token_name'] == $token )
         {
             // 检测交易状态
-            if( $item['action']['transaction']['block']['status'] == 'lightconfirm' )
+            if( $item['action']['transaction']['block']['status'] == 'lightconfirm' || $item['action']['transaction']['block']['status'] == 'noreversible' )
             {
                 // 检测订单号
                 if( strpos( trim($item['action']['rawData']['act']['data']['memo']) , $memo_prefix) !== false )
@@ -363,6 +392,40 @@ function fo_get_user_tx( $account , $memo_prefix , $token = 'FOUSDT@eosio' )
 
     return $ret;
 
+}
+
+function ft_get_meta( $post_id , $name )
+{
+    // 使用不带缓存的版本吧
+    $meta_thing = get_post_meta( $post_id , $name );
+
+    return isset( $meta_thing[0] ) ? $meta_thing[0] : false;
+    
+    // if( !isset($GLOBALS['_meta_cache'][$name]) )
+    // {
+    //     $meta_thing = get_post_meta( $post_id , $name );
+
+    //     if( isset( $meta_thing[0] ) )
+    //         $GLOBALS['_meta_cache'][$name] = $meta_thing[0];
+    //     else
+    //         $GLOBALS['_meta_cache'][$name] = false;    
+    // }
+    // return $GLOBALS['_meta_cache'][$name];
+}
+
+function ft_get_meta_array( $post_id , $name )
+{
+    $item_or_array = ft_get_meta( $post_id , $name );
+
+    if( !is_array( $item_or_array ) ) $item_or_array = [ $item_or_array ];
+
+    $ret = [];
+    foreach( $item_or_array as $item )
+    {
+        if( $item ) $ret[] = $item;
+    }
+
+    return $ret;
 }
 
 
