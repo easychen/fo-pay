@@ -346,7 +346,7 @@ function fo_get_user_tx( $account , $memo_prefix , $token = 'FOUSDT@eosio' )
         if( $item['token_from']['token_name'] == $token )
         {
             // 检测交易状态
-            if( $item['action']['transaction']['block']['status'] == 'noreversible' )
+            if( $item['action']['transaction']['block']['status'] == 'lightconfirm' )
             {
                 // 检测订单号
                 if( strpos( trim($item['action']['rawData']['act']['data']['memo']) , $memo_prefix) !== false )
