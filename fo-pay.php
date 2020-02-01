@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: 	FO Pay
-Plugin URI: 	https://ftqq.com/fopay
+Plugin URI: 	http://go.ftqq.com/fopay
 Description: 	基于 FO 的付费阅读
 Version: 		1.2
 Author: 		Easy
@@ -63,16 +63,15 @@ add_filter('the_content', function( $content )
     $meta = get_post_meta(get_the_ID());
     $user = wp_get_current_user();
 
-    if( intval($meta['fo-usdt-price'][0]) > 0 )
+    if( intval(end($meta['fo-usdt-price'])) > 0 )
     {
-        $paid_uids = get_post_meta( get_the_ID() , '_paid_uids' )[0];
+        $paid_uids = end(get_post_meta( get_the_ID() , '_paid_uids' ));
 
         if( $user && $paid_uids )
         {
             
             if( in_array( $user->ID , $paid_uids ) )
             {
-                // logit("在里半啊".print_r( $user , 1 )) ;
                 $content = str_replace( [ '[pay]' , '[/pay]' ] , '' , $content );
                 return $content;
             }
@@ -81,7 +80,7 @@ add_filter('the_content', function( $content )
         
         
         // 开始进行付费控制
-        $price = intval($meta['fo-usdt-price'][0])/100;
+        $price = intval(end($meta['fo-usdt-price']))/100;
         if( preg_match( "/\[pay](.+?)\[\/pay]/is" , $content  ) )
         {
             $content = preg_replace( "/\[pay](.+?)\[\/pay]/is" , get_pay_notice( get_the_ID() , $price ) , $content );
@@ -169,13 +168,13 @@ function fo_cron_exec()
             */
            
 
-            if( isset( $post_meta['fo-usdt-price'] ) && intval( $post_meta['fo-usdt-price'][0] ) >= 0 )
+            if( isset( $post_meta['fo-usdt-price'] ) && intval( intval(end($post_meta['fo-usdt-price'])) ) >= 0 )
             {
-                logit( "取到了meta里的 price ". $post_meta['fo-usdt-price'][0]);
+                logit( "取到了meta里的 price ". intval(end($post_meta['fo-usdt-price'])));
 
                 $paid_price = explode(" " , $tx['quantity']['quantity'])[0]*100;
 
-                if( $paid_price >= $post_meta['fo-usdt-price'][0] )
+                if( $paid_price >= intval(end($post_meta['fo-usdt-price'])) )
                 {
                     logit( "支付价格为 ".$paid_price);
 
@@ -276,7 +275,11 @@ function get_pay_notice( $post_id , $price = 1 )
         
         $notice = "<p>以下部分的内容需要支付后才能阅读。请<a href='https://wallet.fo' target='_blank'>下载 FO 钱包</a>，扫描二维码支付。完成后，稍等三到五分钟刷新本页面。 </p>";
 
-        $notice .= '<p><img style="margin:20px;" src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chld=H|1&chl='.urlencode($url).'" /></p>';
+        // 国外版 调用 google api
+        // $notice .= '<p><a href="fowallet://' . urlencode($url) . '"><img style="margin:20px;" src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chld=H|1&chl='.urlencode($url).'" /></a></p>';
+
+        // 国内版
+        $notice .= '<p><a href="fowallet://' . urlencode($url) . '"><img style="margin:20px;max-width:160px;max-height:160px;" src="http://qr.topscan.com/api.php?text='.urlencode($url).'" /></a></p>';
 
     }
     else
